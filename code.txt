@@ -1,0 +1,170 @@
+#include<Servo.h>
+#include <LiquidCrystal.h>
+
+LiquidCrystal lcd(2, 3, 4, 5, 6, 7);
+#define TRIG 8
+#define ECO 9
+#define metalSensor 10
+#define Capacitive_Sensor 11
+#define Motor1 12
+#define Motor2 13
+#define Motor3 14
+#define TRIG_metal 15
+#define ECO_metal 16
+#define TRIG_org 17
+#define ECO_org 18
+#define TRIG_recy 19
+#define ECO_recy 20
+#define LED 21
+
+int Duration,Distance;
+int pos;
+int flag;
+Servo Myservo1;
+Servo Myservo2;
+Servo Myservo3;
+
+void setup(){
+lcd.begin(16, 2);
+lcd.setCursor(0,0);
+lcd.clear();
+pinMode(TRIG,OUTPUT);
+pinMode(ECO,INPUT);
+pinMode(TRIG_metal,OUTPUT);
+pinMode(ECO_metal,INPUT);
+pinMode(TRIG_org,OUTPUT);
+pinMode(ECO_org,INPUT);
+pinMode(TRIG_recy,OUTPUT);
+pinMode(ECO_recy,INPUT);
+pinMode(metalSensor, INPUT_PULLUP); 
+pinMode(Capacitive_Sensor, INPUT);
+Myservo1.attach(Motor1);
+Myservo2.attach(Motor2);
+Myservo3.attach(Motor3);
+pinMode(LED,OUTPUT);
+flag=0;
+Serial.begin(9600);
+}
+
+void loop(){
+if flag==0
+	lcd.clear();
+digitalWrite(TRIG,HIGH);
+delay(1);
+digitalWrite(TRIG,LOW);
+Duration = pulseIn(ECO,HIGH);
+Distance = Duration/58.2;
+
+if (Distance<=28 && flag==0){
+	lcd.setCursor(0,0);
+	lcd.print("Waste Detected");
+	if(digitalRead(metalSensor) == HIGH){
+		lcd.clear();
+		lcd.setCursor(0,0);
+		lcd.print("Metal Detected");
+		for(pos=0;pos<=360;pos++){
+			Myservo1.write(pos);
+			delay(5);
+		}
+		delay(100);
+		for(pos=360;pos>=0;pos--){
+			Myservo1.write(pos);
+			delay(5);
+		}
+	}
+	else if (digitalRead(Capacitive_Sensor) == HIGH){
+		lcd.clear();
+		lcd.setCursor(0,0);
+		lcd.print("Recyclable Waste Detected");
+		for(pos=0;pos<=360;pos++){
+			Myservo2.write(pos);
+			delay(5);
+		}
+		delay(100);
+		for(pos=360;pos>=0;pos--){
+			Myservo2.write(pos);
+			delay(5);
+		}
+	}
+	else {
+		lcd.clear();
+		lcd.setCursor(0,0);
+		lcd.print("Organic Waste Detected");
+		for(pos=0;pos<=360;pos++){
+			Myservo3.write(pos);
+			delay(5);
+		}
+		delay(100);
+		for(pos=360;pos>=0;pos--){
+			Myservo3.write(pos);
+			delay(5);
+		}
+	}
+}
+
+digitalWrite(TRIG_metal,HIGH);
+delay(1);
+digitalWrite(TRIG_metal,LOW);
+Duration = pulseIn(ECO_metal,HIGH);
+Distance = Duration/58.2;
+if (Distance>=25){
+	flag=1;
+	lcd.clear();
+	lcd.setCursor(0,0);
+	lcd.print("Metal Bin is full");
+	digitalWrite(LED,HIGH);
+}
+else{
+	flag=0;
+	digitalWrite(LED,LOW);
+}
+
+digitalWrite(TRIG_org,HIGH);
+delay(1);
+digitalWrite(TRIG_org,LOW);
+Duration = pulseIn(ECO_org,HIGH);
+Distance = Duration/58.2;
+if (Distance>=25){
+	flag=1;
+	lcd.clear();
+	lcd.setCursor(0,0);
+	lcd.print("Organic Bin is full");
+	digitalWrite(LED,HIGH);
+}
+else{
+	flag=0;
+	digitalWrite(LED,LOW);
+}
+
+digitalWrite(TRIG_recy,HIGH);
+delay(1);
+digitalWrite(TRIG_recy,LOW);
+Duration = pulseIn(ECO_recy,HIGH);
+Distance = Duration/58.2;
+if (Distance>=25){
+	flag=1;
+	lcd.clear();
+	lcd.setCursor(0,0);
+	lcd.print("Recycle Waste Bin is full");
+	digitalWrite(LED,HIGH);
+}
+else{
+	flag=0;
+	digitalWrite(LED,LOW);
+}
+
+}
+
+
+
+
+//Recuirements
+1.Arduino UNO X1
+2.Battery 9V X2
+3.RC-A-354 metal sensor X1
+4.Resistor 330Ω 
+5.Ultrasonic Sensor - HC - SR04 X4
+6.Omron Stainless Steel Capacitive Proximity Sensor CA30 X1
+7.LED
+8.16X2 LCD Display X1
+
